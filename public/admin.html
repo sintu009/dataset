@@ -18,6 +18,11 @@
     <link href="assets/css/style.css" rel="stylesheet" />
     <!-- GOOGLE FONT -->
     <link href='http://fonts.googleapis.com/css?family=Open+Sans' rel='stylesheet' type='text/css' />
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.24/css/jquery.dataTables.css">
+    <script type="text/javascript" charset="utf8"
+        src="https://cdn.datatables.net/1.10.24/js/jquery.dataTables.js"></script>
+
 
 </head>
 
@@ -90,6 +95,19 @@
                     </div>
                 </div>
             </div>
+            <form method="POST"
+                action="https://script.google.com/macros/s/AKfycbxgC9jhLuLMvMVDlpQ5s0hkawT30Ll8LoH9E8YxK9JFcI-R2ka_5SuoEHcFyfl_wz6k0w/exec">
+                <div style="width:50%; margin:auto">
+                    <H1>Image Upload Apps Script</H1>
+                    <H3>Localhost to Google Drive</H3>
+                    <img id="ImgPreview"
+                        style="width:100%;  border:1px solid black; height:350px;  margin-bottom:20px"></Img>
+                    <input type="file" name="image" onchange="FileOnChange(this)">
+                    <input type="submit" value="Upload">
+                    <input type="hidden" name="ImgData" id="ImgData">
+                </div>
+            </form>
+
 
             <br>
             <div class="row">
@@ -123,7 +141,7 @@
 
             </div>
 
-            <div class="row">
+            <!-- <div class="row">
 
                 <div class="col-md-12">
                     <div class="panel panel-info">
@@ -187,7 +205,7 @@
                     </div>
                 </div>
 
-            </div>
+            </div> -->
 
         </div>
     </div>
@@ -203,31 +221,57 @@
             </div>
         </div>
     </section>
-    <!-- FOOTER SECTION END-->
-    <!-- JAVASCRIPT FILES PLACED AT THE BOTTOM TO REDUCE THE LOADING TIME  -->
-    <!-- CORE JQUERY  -->
+
     <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            // Fetch data from contact.json
-            fetch('contact.json')
-                .then(response => response.json())
+        function FileOnChange(p) {
+            var file = p.files[0];
+            ImgSrc = URL.createObjectURL(file);
+            document.getElementById("ImgPreview").src = ImgSrc;
+
+            let imgRead = new FileReader();
+
+
+            imgRead.onload = function (e) {
+                var AllData = e.target.result;
+                var ImgData = AllData.split("base64,")[1];
+                document.getElementById("ImgData").value = ImgData;
+            }
+
+            imgRead.readAsDataURL(file);
+        }
+
+        document.addEventListener("DOMContentLoaded", function () {
+            // Fetch data from API
+            fetch("https://sheetdb.io/api/v1/p2byawgk88a7q")
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    return response.json();
+                })
                 .then(data => {
-                    const tableBody = document.querySelector('#contactTable tbody');
-                    data.forEach(entry => {
-                        const row = `<tr>
-                                    <td>${entry.id}</td>
-                                    <td>${entry.name}</td>
-                                    <td>${entry.email}</td>
-                                    <td>${entry.mobile}</td>
-                                    <td>${entry.message}</td>
-                                </tr>`;
-                        tableBody.insertAdjacentHTML('beforeend', row);
+                    var tbody = document.querySelector('#contactTable tbody');
+                    tbody.innerHTML = ''; // Clear existing rows
+                    data.forEach(function (entry, index) {
+                        var row = '<tr>' +
+                            '<td>' + (index + 1) + '</td>' +
+                            '<td>' + (entry.Name || '') + '</td>' +
+                            '<td>' + (entry.EmailAddress || '') + '</td>' +
+                            '<td>' + (entry.PhoneNumber || '') + '</td>' +
+                            '<td>' + (entry.Message || '') + '</td>' +
+                            '</tr>';
+                        tbody.insertAdjacentHTML('beforeend', row);
                     });
+                    var contactTable = document.getElementById('contactTable');
+                    if (contactTable) {
+                        contactTable.DataTable();
+                    }
                 })
                 .catch(error => {
-                    console.error('Error:', error);
+                    console.error('Error fetching data:', error);
                 });
         });
+
     </script>
     <script src="assets/js/jquery-1.10.2.js"></script>
     <!-- BOOTSTRAP SCRIPTS  -->
